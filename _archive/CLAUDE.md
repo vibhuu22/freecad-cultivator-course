@@ -212,9 +212,10 @@ The Canva connector can build these as real Canva presentations, but note two li
    the same sketch. A real limitation students will hit — worth a slide.
 3. **No full-round fillet in FreeCAD.** The clevis noses get two R0.63 corner fillets
    instead. R0.63 on the 0.4 in plate edge fails outright — a good worked example.
-4. **Angle constraints are ambiguous.** The Tine 01 rake is dimensioned as forward reach
-   (DistanceX); an Angle constraint let the solver flip the tyne backwards. `FootReach` is
-   a spreadsheet formula of `Rake`, so it stays parametric.
+4. **Angle constraints are ambiguous.** An angle between two *lines* let the solver flip
+   Tine 01 backwards. The rake is now the **sweep angle of the bend arc** (35°), which has
+   one solution; `FootReach` is a derived (result) row in the sheet. FootLength is the
+   rounded 5.65 in (exact 5.6476 would make the centreline exactly 25 in).
 5. **Endpoint tangency, not tangency + coincidence.** An edge-to-edge Tangent on a join that
    already has a Coincident conflicts (`solve()` = −3). Use `Tangent(g1,pos1,g2,pos2)`.
 6. **Tyne lengths.** 25 in overall = 15 in straight shank + bend + foot, from the
@@ -226,6 +227,27 @@ The Canva connector can build these as real Canva presentations, but note two li
 ### Not yet done
 - Hex bolts (Fasteners addon not installed; would be Part 8 + a link array)
 - Assembly **Joints** — components are placed by App::Link arrays, which is the honest
-  FreeCAD answer to SolidWorks' Linear Component Pattern, but the decks should still show
-  the Joint dialog for the frame-to-tyne mate.
-- TechDraw sheets
+  FreeCAD answer to SolidWorks' Linear Component Pattern. The Joint *dialog* is now
+  captured (`dlg_asm_joint.png`) but the assembly itself still uses link arrays.
+- `assets/cultivator-field.jpg` — a real field photo the user must supply (rights).
+
+## Repo-checklist pass (2026-09-13)
+This file, `transcript.txt`, the .docx, `decks/` and `tools/` were moved to `_archive/` so the
+SolidWorks vocabulary stays out of the slide-generation context (Claude Design reads the
+repo). Claude Code no longer auto-loads this file; it is referenced from memory.
+
+- Build scripts live in `_archive/tools/` now (their sys.path was updated).
+- FreeCAD is on the **FreeCAD Light** theme; Model and Tasks are tabbed on the left (no
+  overlay). `user.cfg.bak-before-light-theme-*` in the FreeCAD config dir is the backup.
+- Everything recaptured light at 1360x1020. `fc_helpers.fit_sketch` frames sketches on
+  their own geometry; `fit_tight` frames standard views on the projected bounding box, so
+  `crop_shots.py` is no longer needed. `*_00_params` shots now show the sheet open.
+- Sketch labels are placed from `fc_helpers.LABELS` ("<doc>/<sketch>" keyed).
+- Readable driving dimensions everywhere: Tine 02 uses a construction R16 centreline arc
+  (CurveRadius, WorkHeight 15); clamp legs are length + angle; blade spine is an arc-length
+  constraint (FreeCAD 1.1.3 draws no label for those) and the plan edge is a 13° angle.
+- 17 `dlg_*.png` captures from `dlg_helpers.py`; UI tour from `capture_ui.py`.
+- `build_drawings.py` makes TechDraw pages (saved inside the part files) and
+  `assets/dwg_*.png`. Picking notes: getVisibleVertexes/Edges are scaled with y DOWN;
+  cosmetic geometry is created unscaled y UP; dimension label X/Y are scaled y UP.
+- Run builds strictly one at a time: queued Qt timers nest inside H.pump() otherwise.
