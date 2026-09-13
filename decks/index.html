@@ -1,0 +1,49 @@
+<title>Design of Farm Machinery - Cultivator in FreeCAD</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+:root{--paper:#E8EAE6;--sheet:#F6F7F4;--ink:#161814;--ink2:#575C52;--ink3:#7C8177;
+  --rule:#C7CCC2;--rule2:#DEE2D9;--accent:#A8321E;}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#131512;--sheet:#1A1D19;--ink:#DEE2D9;--ink2:#969C90;--ink3:#6F756A;
+  --rule:#2D322A;--rule2:#232821;--accent:#E0603D;}}
+:root[data-theme="dark"]{--paper:#131512;--sheet:#1A1D19;--ink:#DEE2D9;--ink2:#969C90;
+  --ink3:#6F756A;--rule:#2D322A;--rule2:#232821;--accent:#E0603D;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"Newsreader",Georgia,serif;font-size:17px;line-height:1.6}
+.wrap{max-width:1100px;margin:0 auto;padding:clamp(28px,6vw,80px) clamp(20px,4vw,40px)}
+h1{font-family:"Archivo",sans-serif;font-size:clamp(32px,5.5vw,60px);font-weight:800;
+  letter-spacing:-.03em;margin:0 0 6px;line-height:1.04}
+.sub{font-size:clamp(17px,1.6vw,21px);color:var(--ink2);max-width:60ch;margin:0 0 8px}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.19em;
+  text-transform:uppercase;color:var(--accent);font-weight:600;margin:0 0 10px}
+hr{border:0;border-top:1px solid var(--rule);margin:clamp(26px,4vw,44px) 0}
+ul{list-style:none;padding:0;margin:0;display:grid;gap:1px;background:var(--rule);
+  border:1px solid var(--rule)}
+li{display:grid;grid-template-columns:1fr auto;background:var(--sheet)}
+a.card{display:grid;grid-template-columns:56px 1fr auto;gap:16px;align-items:baseline;
+  padding:16px 20px;text-decoration:none;color:inherit;transition:background .15s;min-width:0}
+a.card:hover{background:var(--paper)}
+.pdf{display:flex;align-items:center;padding:0 20px;font-family:"IBM Plex Mono",monospace;
+  font-size:11px;letter-spacing:.1em;color:var(--ink3);text-decoration:none;
+  border-left:1px solid var(--rule);transition:color .15s,background .15s}
+a.pdf:hover{color:var(--accent);background:var(--paper)}
+.n{font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:600;color:var(--accent)}
+.t{font-family:"Archivo",sans-serif;font-size:19px;font-weight:600;letter-spacing:-.01em}
+.m{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink3);white-space:nowrap}
+.m a{color:var(--accent)}
+.foot{margin-top:clamp(26px,4vw,44px);font-size:14px;color:var(--ink3);max-width:70ch}
+</style>
+<div class="wrap">
+<p class="eyebrow">Design of Farm Machinery</p>
+<h1>Nine-Tyne Cultivator in FreeCAD</h1>
+<p class="sub">A complete, screenshot-by-screenshot build of a tractor-mounted rigid-tyne
+cultivator in FreeCAD 1.1 &mdash; from an empty document to a parametric assembly.
+14 decks.</p>
+<hr>
+<ul><li><a class="card" href="01-introduction.html"><span class="n">01</span><span class="t">The Nine-Tyne Cultivator</span><span class="m">8 sheets</span></a><a class="pdf" href="01-introduction.pdf">PDF</a></li><li><a class="card" href="02-freecad-interface.html"><span class="n">02</span><span class="t">The FreeCAD Window</span><span class="m">8 sheets</span></a><a class="pdf" href="02-freecad-interface.pdf">PDF</a></li><li><a class="card" href="03-setting-up.html"><span class="n">03</span><span class="t">Setting Up a Part</span><span class="m">6 sheets</span></a><a class="pdf" href="03-setting-up.pdf">PDF</a></li><li><a class="card" href="04-sketching-and-constraints.html"><span class="n">04</span><span class="t">Sketching and Constraints</span><span class="m">9 sheets</span></a><a class="pdf" href="04-sketching-and-constraints.pdf">PDF</a></li><li><a class="card" href="05-part1-frame.html"><span class="n">05</span><span class="t">Part 1: The Frame</span><span class="m">11 sheets</span></a><a class="pdf" href="05-part1-frame.pdf">PDF</a></li><li><a class="card" href="06-part2-tine01.html"><span class="n">06</span><span class="t">Part 2: Tine 01</span><span class="m">8 sheets</span></a><a class="pdf" href="06-part2-tine01.pdf">PDF</a></li><li><a class="card" href="07-part3-tine02.html"><span class="n">07</span><span class="t">Part 3: Tine 02</span><span class="m">7 sheets</span></a><a class="pdf" href="07-part3-tine02.pdf">PDF</a></li><li><a class="card" href="08-parts45-clamps.html"><span class="n">08</span><span class="t">Parts 4 and 5: The Clamps</span><span class="m">8 sheets</span></a><a class="pdf" href="08-parts45-clamps.pdf">PDF</a></li><li><a class="card" href="09-parts67-blades.html"><span class="n">09</span><span class="t">Parts 6 and 7: The Blades</span><span class="m">7 sheets</span></a><a class="pdf" href="09-parts67-blades.pdf">PDF</a></li><li><a class="card" href="10-assembly.html"><span class="n">10</span><span class="t">The Assembly</span><span class="m">8 sheets</span></a><a class="pdf" href="10-assembly.pdf">PDF</a></li><li><a class="card" href="11-patterns-and-fasteners.html"><span class="n">11</span><span class="t">Patterns and Fasteners</span><span class="m">7 sheets</span></a><a class="pdf" href="11-patterns-and-fasteners.pdf">PDF</a></li><li><a class="card" href="12-appearance-and-drawings.html"><span class="n">12</span><span class="t">Appearance and Drawings</span><span class="m">6 sheets</span></a><a class="pdf" href="12-appearance-and-drawings.pdf">PDF</a></li><li><a class="card" href="13-making-it-parametric.html"><span class="n">13</span><span class="t">Making It Parametric</span><span class="m">6 sheets</span></a><a class="pdf" href="13-making-it-parametric.pdf">PDF</a></li><li><a class="card" href="14-summary-and-exercises.html"><span class="n">14</span><span class="t">Summary and Exercises</span><span class="m">7 sheets</span></a><a class="pdf" href="14-summary-and-exercises.pdf">PDF</a></li></ul>
+<p class="foot">Each deck is a single self-contained HTML file: the screenshots are
+embedded, so it works offline. Arrow keys page through it. Source design after
+&ldquo;Design of Cultivator in SolidWorks | Nine tines cultivator&rdquo; by Malviya CAD
+Solution; all FreeCAD modelling, dimensions and assumptions are documented on the slides.</p>
+</div>

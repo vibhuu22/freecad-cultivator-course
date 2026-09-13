@@ -1,0 +1,314 @@
+
+Hello friends, welcome back to Malviya CAD Solution.
+Today, we are going to design a cultivator, which is attached behind a tractor. We will create all of its parts one by one. I hope you will like this video. If you are new to our channel, please subscribe, and if you like the video, please like and share it.
+So, let's start by preparing the frame, which we are going to create using the Weldment feature.
+Frame
+First, we will create the first part, which is the frame. We will change the units to IPS (inch-pound-second) and prepare the design in inches.
+We will create a center rectangle here and set its dimensions to 82 inches and a height of 22 inches.
+The central rectangle has now been created. We simply need to extrude it.
+Now, the Weldment feature is visible here. If it is not visible, go to the Right-click menu and activate it.
+Select Weldments, then go to Structural Member. Under Structural Member, select ANSI Inch.
+For the frame, we need to use a tube, so we will select a square tube. Its size will be 0.1875 inches.
+Next, enter the required group box, click here, and select the first line, followed by the second line.
+We will now set the material to Satin Finish Stainless Steel and apply the appropriate color.
+Next, select this face and create a sketch.
+Show the previous sketch. After selecting it, choose Sketch → Convert Entities.
+We are creating this geometry for construction purposes, so close the sketch.
+According to the construction geometry, we now need to set the required dimensions and the hole size. The hole size is 12.5.
+There is one hole here and another hole here. Simply press Escape to close the command.
+Now we need to provide the dimensions. The hole size is 3 inches.
+Select the distance feature. The feature is already selected. We now need to specify the direction, so select this line.
+The distance is 9.5 inches.
+We need 9 patterns. Select the pattern quantity and click OK.
+In this way, the holes have been created on the frame.
+Now select the sketch and go to Mirror. In Mirror, select the Front Plane and the required feature.
+We need to create two brackets on this side where the attachment/fitting will take place.
+For this, we will create a Corner Rectangle.
+Its size will be 0.63 inches. The distance between both rectangles will be 1.5 inches, and the distance from the origin point will be 15 inches.
+Now go to Features. Set the required depth, approximately 0.3 inches, and then change it to 0.4 inches. Click OK.
+We need to apply a complete circular fillet.
+Select the first face, second face, and third face. Similarly, apply the same operation to the other side by selecting the first, second, and third faces.
+The first bracket on this side is now complete.
+Now, using the Mirror Tool, we need to create the same geometry on the other side. Select the Right Plane.
+Next, we need to create a hole.
+Select Hole Wizard and choose the appropriate drill size. This time, the drill size is 25.5.
+For the hole position, move the cursor over this curve. The automatic point indicator will appear. Simply click there and select OK.
+The bracket is now complete.
+We will save this part.
+Let's create a new folder so that all our parts remain organized in one place.
+Go to the Cultivator folder, create Part 1, and name it Frame.
+Now close this part and move on to the second part.
+Part 2 — Tine 01
+Now we will create the second part of the cultivator.
+First, change the units. Select the Right Plane.
+We will position the geometry at the center of the origin point. Create a line.
+Create another line and then enter the required dimensions.
+The dimensions are:
+Length: 25 inches
+Dimension: 1.5 inches
+Distance between the two points: 2.25 inches
+Vertical distance: 2 inches
+Apply all the required dimensions.
+The height between these two points is 15 inches.
+Apply the remaining dimensions. This dimension is 1 inch.
+The sketch is now fully defined.
+Apply 1.5 inches on the inside and 2 inches on the outside.
+Create a rectangle with a width of 5 inches and a height of 1.25 inches.
+The distance is 11 inches.
+The height from this point to this point should be 22 inches.
+Now create circles.
+The hole size is 0.5 inches.
+The distance between the two holes will be 3 inches.
+Select the centerline and mirror the first and second holes about this line.
+Use a blind condition with a depth of 0.4 inches.
+The second part is now ready.
+We can also apply a slightly darker appearance to it.
+Save it as Part 2 — Tine 01.
+Now close it and move on to the next part.
+Part 3 — Tine 02
+Now we are going to create the third part of the cultivator.
+Again, change the units and apply all dimensions in inches.
+First, select the Right Plane and create a line.
+We will use a midpoint line.
+Create another line and position it appropriately.
+Now create the sketch using the required points.
+The length of this line is 24 inches.
+Close the lines on both sides.
+The height from this point to this point is 2 inches, and the height on the other side is also 2 inches.
+The gap between the two sides is 2.5 inches.
+We will use a radius of 16 inches on both sides.
+Another dimension is required from this point to the midpoint of the outer arc: 20.3 inches.
+The height from this point to this point is 15 inches.
+The sketch is now almost complete.
+Apply the remaining dimensions:
+1.5 inches
+1.5 inches
+Distance between the points: 5 inches
+Top section: 1 inch
+The sketch is now fully defined.
+We need to create a flat section here.
+Apply a 1-inch radius to this corner and click OK.
+Go to Features.
+The thickness will be 1.25 inches, the same as the previous part.
+Click OK.
+The bottom radius will be 2 inches.
+Select the bottom face and create a sketch.
+Create a center rectangle.
+Create a centerline and make it vertical.
+Select the appropriate point and line and apply the symmetry relation so that the rectangle is centered.
+Now apply the dimensions:
+Width: 5 inches
+Height: 1.25 inches
+Distance from origin: 11 inches
+Center-to-center distance: 22 inches
+Now create the center circles and holes.
+Create one hole here and another here.
+Hole diameter: 0.5 inches.
+Select both holes using Ctrl and make them equal.
+The distance between the two holes is 3 inches.
+Select both holes and use Mirror Entities to copy them about the centerline.
+Now apply a Blind condition with a depth of 0.5 inches.
+The second tine is now complete.
+Apply the appearance.
+Select Metal → Steel → Sand Blast Steel, which is the same material we used previously.
+Save it in the Cultivator folder as Part 3 — Tine 02.
+Now close the part.
+Clamp 01
+We are now going to create the fourth part of the cultivator, which is the attachment clamp.
+First, change the units.
+Select the Right Plane and activate the Line Tool.
+Create a line.
+Make these two points vertically coincident.
+Now apply the dimensions:
+Length: 4 inches
+Straight line length: 18 inches
+Dimension: 7 inches
+Angle: 45°
+Delete the unnecessary line and make the required geometry vertically coincident with the origin.
+Now apply a fillet.
+The radius is 2 inches.
+Select the required corners and click OK.
+Next, use Offset Entities.
+Set the offset to 0.5 inches, i.e. half an inch.
+Select this line and set the direction toward the inside.
+Close the sketch from both ends.
+Now apply the required thickness/width of 3 inches.
+For the rounded geometry, use the appropriate feature option.
+Apply the same process on the other side.
+Select the required faces and apply the necessary operations.
+Now create the required hole with a 1-inch through condition and position it appropriately.
+Click OK.
+The first attachment clamp is now complete.
+Apply an appearance of Satin Finish Stainless Steel and choose the desired color.
+Save it as Part 4 — Clamp 01.
+Now close it and move on to the second clamp.
+Clamp 02
+We will now create the second attachment clamp.
+Change the units and again select the Right Plane.
+Create a sketch and activate the Line Tool.
+Create the required line.
+The length of the line is 26.6 inches.
+Create a centerline.
+The tip angle will be 30°.
+Apply the required fillet.
+Then use Offset Entities, using the same 0.5-inch offset as before.
+Close the sketch on both sides.
+The sketch is now fully defined.
+Just as in the previous part, apply the required rounded geometry on both sides.
+Select the required faces and position them appropriately.
+This part is now complete as well.
+Apply the required appearance.
+Blade 01
+Now we will create the blade.
+The dimensions are 13 × 4 inches, with a thickness/height of 0.5 inches.
+Select the top face and create a sketch.
+Create a centerline.
+Create another centerline.
+Now create the required line.
+Create the sketch accordingly.
+Apply the required dimensions:
+Angle: 13°
+Gap: 1.5 inches
+Now apply the required flat/feature operation.
+Select the required geometry about this line.
+Go to Mirror.
+Select the required geometry and mirror it about the centerline.
+Now go to Features and click OK.
+The blade is now ready.
+Activate the Line Tool and connect these two points.
+Click OK.
+Now select this line.
+Using Ctrl, select the three required lines and apply Convert Entities.
+The sketch will be created.
+Go to Features and use the required Extruded Cut operation.
+The cut will be created as shown.
+Now apply a complete round fillet.
+Select the first, second, and third faces.
+Repeat the same operation on the other side.
+Click OK.
+Now apply a Normal Plate operation with a thickness of 0.2 inches.
+Select all the required faces, including the back side, and click OK.
+The blade is now complete.
+We now need to bend it.
+At the moment, the blade is parallel, so we need to bend it slightly.
+For bending, go to the menu bar, then Insert → Features → Flex.
+Open the Flex feature.
+Select the blade as the component and choose Bending.
+First, select the appropriate plane/point.
+Select the first vertex and then the second vertex.
+We can bend the blade from here as well.
+Set the bending dimension to -10 inches.
+Click OK.
+As you can see, the blade has now been bent properly and is ready to be installed on the cultivator.
+Save it as Part 6 — Blade 01.
+Blade 02
+Now we need to create another blade because our two tines have different radii.
+One has a 10-inch radius, while the other has a 16-inch radius.
+We can simply edit the existing Flex feature.
+Edit the Flex feature and change -10 to -16.
+As you can see, the radius has now changed to 16 inches.
+Save the part.
+Now we need to create the assembly.
+Assembly
+Go to New and select Assembly.
+Activate the origin point and mate the required components.
+Then go to the appropriate view and close the origin display.
+Now select the background/reference component.
+Go to Insert Components.
+Open the first tine.
+Apply the required mates.
+Select the bottom face and the corresponding face, then click OK.
+Select the required holes and mate them properly.
+Select the appropriate relation and make the holes concentric.
+The first tine is now properly positioned.
+Next, select Linear Component Pattern.
+For the direction, select this line.
+Set the distance to 19 inches and the number of patterns to 5.
+Reverse the direction and click OK.
+Now go to Insert Components again.
+Open the second tine.
+Apply the required mates and position its holes correctly.
+The second tine is now properly positioned.
+Again, activate Linear Component Pattern.
+Select the required direction and reverse it if necessary.
+Select the required component.
+All the tines are now positioned.
+We will also set the color/appearance of the tines so that they have the same appearance and the overall design looks better.
+Applying the correct appearance is important because it makes the project look more professional and visually appealing.
+Now the tines are properly created and assembled.
+Again, go to Insert Components and open the first blade.
+Select the required mates and position the blade properly.
+Next, open the tine part.
+Select its Right Plane.
+Open the blade and select its Front Plane.
+Apply the appropriate mate.
+Select the midpoint of the tine.
+Set the distance to 3 inches and click OK.
+The blade is now properly positioned.
+Go to Linear Pattern.
+Select the required line and reverse the direction as necessary.
+Set the required number of patterns.
+Now repeat the same process for the second blade.
+Open the appropriate part, select its Right Plane, and select the blade's Front Plane.
+Apply the required mate and set the distance to 3 inches.
+The second blade is now properly positioned.
+Again, use Linear Component Pattern as required.
+Now insert the attachment clamp.
+Open the attachment clamp and apply the required mates.
+Open the frame part.
+Select the appropriate plane, such as the Front Plane.
+Open the clamp that we just inserted and select its appropriate plane, such as the Right Plane.
+Apply the mate.
+The clamp is now properly positioned.
+Using Ctrl, select and copy the required component.
+Now select the appropriate holes and mate them so that they are properly centered.
+As you can see, the cultivator assembly is taking shape.
+Select the required faces and drag/copy the component to create the corresponding components on the other side.
+Now select the Cultivator Assembly.
+The frame can also be edited directly within the assembly.
+Select the required face and create a sketch.
+Select the required geometry and activate Trim Entities.
+The sketch is now complete.
+This is the central hole. Apply Convert Entities to it as well.
+Apply the required offset and reverse the direction where necessary.
+Use Mirror about the Right Plane.
+Apply the required geometry pattern.
+Now apply the required flat/feature operation.
+As you can see, the cultivator assembly is now complete.
+We now need to insert the bolts.
+Use the required hex bolts.
+Set the required size.
+Go to the Toolbox and insert the required hardware component.
+Set the length to 1.5 inches.
+The first bolt is too long, so we will edit it and make it shorter.
+Set the required length to approximately 2.75 inches.
+The other bolt needs to be made longer.
+Edit it through the Toolbox and set its length to 5.5 inches.
+First, reduce the length of the bolt and fit it into position.
+Set the required dimension to 1.25 inches.
+The required length is 5 inches.
+Another component will be set to 4 inches.
+Edit it as required.
+Go back to the Toolbox.
+Open the required component and set its size.
+We need 1.25 TPI, with the required double-chamber/symmetric configuration.
+Click OK.
+Place the component in the required position. The center will be automatically located.
+Again, go to Toolbox Components.
+The required hardware will now be positioned.
+Select the direction by selecting this line.
+The gap is 9.5 inches.
+Set the number of component patterns to 9.
+The bolts are now properly positioned.
+Again, go to Linear Component Pattern and then select Mirror Components.
+Select the appropriate plane, such as the Front Plane.
+Select all the bolts carefully.
+Make sure that every required bolt is selected.
+Click OK.
+As you can see, all the bolts have now been added.
+The cultivator is now completely ready.
+I hope you liked this project.
+If you enjoyed the project, please like the video, comment, and share it.
+We regularly create and share similar projects and video tutorials for you.
+Stay connected with our channel, and we will meet again soon in the next video.
+Until then, goodbye!
