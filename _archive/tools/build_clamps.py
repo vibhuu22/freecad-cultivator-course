@@ -13,7 +13,7 @@ members and for the curved blades, so it is worth learning once.
   both     : 3 in wide x 0.5 in thick strap, one 1 in through hole
 """
 import sys, math
-sys.path.insert(0, r"C:\Users\ASUS\Desktop\freecad\tools")
+sys.path.insert(0, r"C:\Users\ASUS\Desktop\freecad\_archive\tools")
 import fc_helpers as H
 H.reload_me()
 import fc_helpers as H
@@ -42,7 +42,7 @@ def snap(name, orient=None):
 def edit_snap(sk, name):
     Gui.ActiveDocument.setEdit(sk)
     H.pump(300)
-    Gui.SendMsgToActiveView("ViewFit")
+    H.fit_sketch(sk)
     H.pump(200)
     snap(name)
     Gui.ActiveDocument.resetEdit()
@@ -61,20 +61,36 @@ def path_sketch(bd, segments, name="Sk_Path"):
         pts.append((pts[-1][0] + dy, pts[-1][1] + dz))
     gs = H.poly(sk, pts, close=False)
     sk.addConstraint(Sketcher.Constraint("Coincident", gs[0], 1, -1, 1))
-    for g, (dy, dz, label) in zip(gs, segments):
+    names = []
+    for k, (g, (dy, dz, label)) in enumerate(zip(gs, segments)):
+        # Measure every run in its positive direction: a "-4 in" return reads as
+        # a mistake on a slide.
+        a, b = (1, 2)
         if abs(dy) < 1e-9:
             sk.addConstraint(Sketcher.Constraint("Vertical", g))
-            c = sk.addConstraint(Sketcher.Constraint("DistanceY", g, 1, g, 2, H.inch(dz)))
-            sk.renameConstraint(c, label)
+            if dz < 0: a, b = b, a
+            c = sk.addConstraint(Sketcher.Constraint("DistanceY", g, a, g, b, H.inch(abs(dz))))
+            sk.renameConstraint(c, label); names.append(label)
         elif abs(dz) < 1e-9:
             sk.addConstraint(Sketcher.Constraint("Horizontal", g))
-            c = sk.addConstraint(Sketcher.Constraint("DistanceX", g, 1, g, 2, H.inch(dy)))
-            sk.renameConstraint(c, label)
+            if dy < 0: a, b = b, a
+            c = sk.addConstraint(Sketcher.Constraint("DistanceX", g, a, g, b, H.inch(abs(dy))))
+            sk.renameConstraint(c, label); names.append(label)
         else:
-            cy = sk.addConstraint(Sketcher.Constraint("DistanceX", g, 1, g, 2, H.inch(dy)))
-            cz = sk.addConstraint(Sketcher.Constraint("DistanceY", g, 1, g, 2, H.inch(dz)))
-            sk.renameConstraint(cy, label + "Run")
-            sk.renameConstraint(cz, label + "Rise")
+            # An angled leg is drawn as length + angle, the way the source gives
+            # it (7 in at 45 deg), not as its run and rise (4.94975 in each).
+            L = math.hypot(dy, dz)
+            cl = sk.addConstraint(Sketcher.Constraint("Distance", g, 1, g, 2, H.inch(L)))
+            pdy, pdz = segments[k - 1][0], segments[k - 1][1]
+            ang = math.atan2(dz, dy) - math.atan2(pdz, pdy)       # CCW from the previous leg
+            ca = sk.addConstraint(Sketcher.Constraint("Angle", gs[k - 1], g, ang))
+            sk.renameConstraint(cl, label + "Length"); names.append(label + "Length")
+            sk.renameConstraint(ca, label + "Angle"); names.append(label + "Angle")
+    doc.recompute()
+    sheet = doc.getObject("Params")
+    for nm in names:                     # every dimension is driven from the sheet
+        if sheet is not None and sheet.getCellFromAlias(nm):
+            sk.setExpression("Constraints.%s" % nm, u"Params.%s" % nm)
     doc.recompute()
     print("  path before fillets:", H.dof_text(sk))
     # fillet at the shared endpoint: trim the lines back, but keep a construction
@@ -121,8 +137,8 @@ def build_clamp(docname, fname, prefix, segments, hole_z, title, params):
     doc = H.newdoc(docname)
     Gui.activateWorkbench("PartDesignWorkbench")
     H.pump(200)
-    H.params_sheet(doc, params, title=title)
-    snap(prefix + "_00_params")
+    sheet = H.params_sheet(doc, params, title=title)
+    H.shot_sheet(sheet, prefix + "_00_params")
 
     bd = H.body(doc, docname)
     H.activate(bd)

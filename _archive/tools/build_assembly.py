@@ -12,7 +12,7 @@ object carries a PlacementList, so five tynes cost one object in the tree and
 one row of numbers - and the pitch is still a single value to edit.
 """
 import sys, os, math
-sys.path.insert(0, r"C:\Users\ASUS\Desktop\freecad\tools")
+sys.path.insert(0, r"C:\Users\ASUS\Desktop\freecad\_archive\tools")
 import fc_helpers as H
 H.reload_me()
 import fc_helpers as H

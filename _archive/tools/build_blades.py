@@ -17,7 +17,7 @@ spreadsheet parameter, so Blade 02 is Blade 01 with one cell changed from 10 to
   R10/R16  bend radius
 """
 import sys, math
-sys.path.insert(0, r"C:\Users\ASUS\Desktop\freecad\tools")
+sys.path.insert(0, r"C:\Users\ASUS\Desktop\freecad\_archive\tools")
 import fc_helpers as H
 H.reload_me()
 import fc_helpers as H
@@ -48,7 +48,7 @@ def snap(name, orient=None):
 def edit_snap(sk, name):
     Gui.ActiveDocument.setEdit(sk)
     H.pump(300)
-    Gui.SendMsgToActiveView("ViewFit")
+    H.fit_sketch(sk)
     H.pump(200)
     snap(name)
     Gui.ActiveDocument.resetEdit()
@@ -75,11 +75,10 @@ PAR = [
     ("BladeLength", "4 in",    "Blade length fore and aft, along the arc"),
     ("Sheet",       "0.2 in",  "Sheet thickness"),
     ("EdgeAngle",   "13 deg",  "Sweep-back of the cutting edge"),
-    ("EdgeRise",    "=Span / 2 * tan(EdgeAngle)", "Rise of the cutting edge (derived)"),
     ("BendRadius",  "10 in",   "Bend radius - 10 for Blade 01, 16 for Blade 02"),
 ]
-H.params_sheet(doc, PAR, title="Blade parameters")
-snap("06_blade_00_params")
+sheet = H.params_sheet(doc, PAR, title="Blade parameters")
+H.shot_sheet(sheet, "06_blade_00_params")
 
 bd = H.body(doc, "Blade")
 H.activate(bd)
@@ -90,18 +89,24 @@ sk_spine = H.sketch(bd, H.YZ, "Sk_Spine")
 g_arc = sk_spine.addGeometry(Part.ArcOfCircle(
     Part.Circle(Vector(H.inch(CY), H.inch(CZ), 0), Vector(0, 0, 1), H.inch(R0)),
     -math.pi / 2.0, -math.pi / 2.0 + TH))
-sk_spine.addConstraint(Sketcher.Constraint("DistanceX", -1, 1, g_arc, 1, H.inch(P0[0])))
-sk_spine.addConstraint(Sketcher.Constraint("DistanceY", -1, 1, g_arc, 1, H.inch(P0[1])))
+# The cutting edge sits on the horizontal axis, 2 in ahead of the origin, and the
+# spine leaves it horizontally: the arc centre is straight above the edge.
+# (A Tangent-to-axis constraint says the same thing but, together with the
+# point-on-axis, the solver counts it as redundant and leaves a free DoF.)
+sk_spine.addConstraint(Sketcher.Constraint("PointOnObject", g_arc, 1, -1))
+c_t = sk_spine.addConstraint(Sketcher.Constraint("DistanceX", g_arc, 1, -1, 1, H.inch(TRAIL)))
+sk_spine.renameConstraint(c_t, "EdgeOffset")
+sk_spine.addConstraint(Sketcher.Constraint("Vertical", g_arc, 1, g_arc, 3))
 c_r = sk_spine.addConstraint(Sketcher.Constraint("Radius", g_arc, H.inch(R0)))
 sk_spine.renameConstraint(c_r, "BendRadius")
-c_cx = sk_spine.addConstraint(Sketcher.Constraint("DistanceX", g_arc, 1, g_arc, 3, 0.0))
-sk_spine.renameConstraint(c_cx, "TangentAtEdge")     # centre directly above the edge
-c_e = sk_spine.addConstraint(Sketcher.Constraint("DistanceX", -1, 1, g_arc, 2, H.inch(P1[0])))
-sk_spine.renameConstraint(c_e, "SpineEnd")
+# Sketcher can dimension an arc's own length: 4 in along the curve, which is how
+# the blade is specified. (The alternative - locating the far end - puts a
+# derived 1.89418 in on the slide.)
+c_e = sk_spine.addConstraint(Sketcher.Constraint("Distance", g_arc, H.inch(LEN)))
+sk_spine.renameConstraint(c_e, "BladeLength")
 sk_spine.setExpression("Constraints.BendRadius", u"Params.BendRadius")
-sk_spine.setExpression("Constraints.SpineEnd",
-                       u"-Params.BladeLength / 2 + Params.BendRadius "
-                       u"* sin(Params.BladeLength / Params.BendRadius * 1rad)")
+sk_spine.setExpression("Constraints.BladeLength", u"Params.BladeLength")
+sk_spine.setExpression("Constraints.EdgeOffset", u"Params.BladeLength / 2")
 doc.recompute()
 print("spine:", H.dof_text(sk_spine), "DoF", sk_spine.DoF,
       "conflict", sk_spine.ConflictingConstraints)
@@ -140,15 +145,17 @@ sk_plan.addConstraint(Sketcher.Constraint("Vertical", l0[3]))
 sk_plan.addConstraint(Sketcher.Constraint("Horizontal", l0[2]))
 sk_plan.addConstraint(Sketcher.Constraint("Symmetric", l0[1], 1, l0[3], 2, -2))
 sk_plan.addConstraint(Sketcher.Constraint("PointOnObject", l0[0], 1, -2))
-cd = [sk_plan.addConstraint(Sketcher.Constraint("DistanceY", -1, 1, l0[0], 1, H.inch(-TRAIL))),
+# The edge sweep-back is the 13 deg angle the source gives, measured from the
+# horizontal axis - not its 1.50069 in rise.
+cd = [sk_plan.addConstraint(Sketcher.Constraint("DistanceY", l0[0], 1, -1, 1, H.inch(TRAIL))),
       sk_plan.addConstraint(Sketcher.Constraint("DistanceX", -1, 1, l0[1], 1, H.inch(SPAN / 2.0))),
-      sk_plan.addConstraint(Sketcher.Constraint("DistanceY", l0[0], 1, l0[0], 2, H.inch(RISE))),
+      sk_plan.addConstraint(Sketcher.Constraint("Angle", -1, l0[0], math.radians(EDGE))),
       sk_plan.addConstraint(Sketcher.Constraint("DistanceY", -1, 1, l0[2], 1, H.inch(TRAIL)))]
-for c, nm in zip(cd, ("TipOffset", "HalfSpan", "EdgeRise", "TrailOffset")):
+for c, nm in zip(cd, ("TipOffset", "HalfSpan", "EdgeAngle", "TrailOffset")):
     sk_plan.renameConstraint(c, nm)
-sk_plan.setExpression("Constraints.TipOffset", u"-Params.BladeLength / 2")
+sk_plan.setExpression("Constraints.TipOffset", u"Params.BladeLength / 2")
 sk_plan.setExpression("Constraints.HalfSpan", u"Params.Span / 2")
-sk_plan.setExpression("Constraints.EdgeRise", u"Params.EdgeRise")
+sk_plan.setExpression("Constraints.EdgeAngle", u"Params.EdgeAngle")
 sk_plan.setExpression("Constraints.TrailOffset", u"Params.BladeLength / 2")
 doc.recompute()
 print("plan:", H.dof_text(sk_plan), "DoF", sk_plan.DoF,

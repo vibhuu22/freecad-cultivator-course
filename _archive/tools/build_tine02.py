@@ -16,7 +16,7 @@ from the start of the outer arc to the point comes out at ~19.7 in, which is
 the transcript's "20.3 inches from the point to the midpoint of the outer arc".
 """
 import sys, math
-sys.path.insert(0, r"C:\Users\ASUS\Desktop\freecad\tools")
+sys.path.insert(0, r"C:\Users\ASUS\Desktop\freecad\_archive\tools")
 import fc_helpers as H
 H.reload_me()
 import fc_helpers as H
@@ -40,7 +40,7 @@ def snap(name, orient=None):
 def edit_snap(sk, name):
     Gui.ActiveDocument.setEdit(sk)
     H.pump(300)
-    Gui.SendMsgToActiveView("ViewFit")
+    H.fit_sketch(sk)
     H.pump(200)
     snap(name)
     Gui.ActiveDocument.resetEdit()
@@ -89,10 +89,7 @@ PAR = [
     ("TopStraight", "2 in",    "Straight length before the curve starts"),
     ("CurveRadius", "16 in",   "Centreline radius of the curve"),
     ("WorkHeight",  "15 in",   "Top of the curve down to the point"),
-    ("Sweep",       "=asin(WorkHeight / CurveRadius)", "Curve sweep (derived)"),
-    ("OuterR",      "=CurveRadius + BarWidth / 2", "Rear edge radius (derived)"),
-    ("TipDrop",     "=-(TopStraight + OuterR * sin(Sweep))",
-                    "Point height below the mounting face (derived)"),
+    ("Sweep",       "=asin(WorkHeight / CurveRadius)", "Result: how far the curve turns"),
     ("HeadLength",  "5 in",    "Mounting head length along the tool bar"),
     ("HeadThk",     "1.25 in", "Mounting head thickness"),
     ("BoltSpacing", "3 in",    "Bolt centres"),
@@ -100,7 +97,7 @@ PAR = [
     ("TipRadius",   "1 in",    "Corner radius at the point"),
 ]
 sheet = H.params_sheet(doc, PAR, title="Tine 02 parameters")
-snap("03_tine02_00_params")
+H.shot_sheet(sheet, "03_tine02_00_params")
 
 bd = H.body(doc, "Tine02")
 H.activate(bd)
@@ -135,14 +132,23 @@ sk.addConstraint(Sketcher.Constraint("PointOnObject", g_aout, 3, g_tip))    # ti
 sk.addConstraint(Sketcher.Constraint("Symmetric", g_top, 1, g_top, 2, -1, 1))
 cw = sk.addConstraint(Sketcher.Constraint("DistanceX", g_top, 1, g_top, 2, H.inch(W)))
 ct = sk.addConstraint(Sketcher.Constraint("Distance", g_rear, H.inch(TOPS)))
-cr = sk.addConstraint(Sketcher.Constraint("Radius", g_aout, H.inch(RO)))
-cd = sk.addConstraint(Sketcher.Constraint("DistanceY", -1, 1, g_tip, 1, H.inch(p_tip_r[1])))
-for c, nm in ((cw, "BarWidth"), (ct, "TopStraight"), (cr, "OuterR"), (cd, "TipDrop")):
+# A construction centreline arc carries the two design numbers from the source:
+# a 16 in curve radius and a 15 in working height. Dimensioning the edges instead
+# would put derived values (R17.25, an 18.17 in drop) on the slide.
+g_ac = sk.addGeometry(Part.ArcOfCircle(
+    Part.Circle(Vector(H.inch(CX), H.inch(CY), 0), Vector(0, 0, 1), H.inch(RC)), -SW, 0.0), True)
+sk.addConstraint(Sketcher.Constraint("Coincident", g_ac, 3, g_aout, 3))     # same centre
+sk.addConstraint(Sketcher.Constraint("PointOnObject", g_ac, 2, -2))         # top end on the bar centreline
+sk.addConstraint(Sketcher.Constraint("Horizontal", g_ac, 3, g_ac, 2))       # ...level with the centre
+sk.addConstraint(Sketcher.Constraint("PointOnObject", g_ac, 1, g_tip))      # far end on the tip face
+cr = sk.addConstraint(Sketcher.Constraint("Radius", g_ac, H.inch(RC)))
+cd = sk.addConstraint(Sketcher.Constraint("DistanceY", g_ac, 1, g_ac, 2, H.inch(WORK)))
+for c, nm in ((cw, "BarWidth"), (ct, "TopStraight"), (cr, "CurveRadius"), (cd, "WorkHeight")):
     sk.renameConstraint(c, nm)
 doc.recompute()
 print(H.dof_text(sk), "| DoF", sk.DoF, "| conflict", sk.ConflictingConstraints,
       "| redundant", sk.RedundantConstraints)
-for nm in ("BarWidth", "TopStraight", "OuterR", "TipDrop"):
+for nm in ("BarWidth", "TopStraight", "CurveRadius", "WorkHeight"):
     sk.setExpression("Constraints.%s" % nm, u"Params.%s" % nm)
 doc.recompute()
 edit_snap(sk, "03_tine02_01_sketch_profile")

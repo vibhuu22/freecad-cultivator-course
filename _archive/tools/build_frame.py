@@ -9,7 +9,7 @@ Every dimension is driven by the Params spreadsheet, so students can retune
 the machine (tyne count, pitch, working width) from one table.
 """
 import sys
-sys.path.insert(0, r"C:\Users\ASUS\Desktop\freecad\tools")
+sys.path.insert(0, r"C:\Users\ASUS\Desktop\freecad\_archive\tools")
 import fc_helpers as H
 H.reload_me()
 import fc_helpers as H
@@ -35,7 +35,7 @@ def edit_snap(sk, name):
     """Open the sketch in the Sketcher and grab the real editing UI."""
     Gui.ActiveDocument.setEdit(sk)
     H.pump(300)
-    Gui.SendMsgToActiveView("ViewFit")
+    H.fit_sketch(sk)
     H.pump(200)
     snap(name)
     Gui.ActiveDocument.resetEdit()
@@ -69,7 +69,8 @@ PAR = [
 sheet = H.params_sheet(doc, PAR, name="Params", title="Cultivator parameters")
 doc.recompute()
 Gui.Selection.clearSelection()
-snap("01_frame_01_params_spreadsheet")
+# The sheet itself is captured open in its own tab (dlg_spreadsheet.png); a grab
+# here only showed an empty 3D view, so 01_frame_01 is intentionally not taken.
 
 # =============================================================== 2  body
 bd = H.body(doc, "Frame")
@@ -190,6 +191,7 @@ def clevis_plate(nm, x_face, reverse):
 
 
 sk_a, pad_a = clevis_plate("ClevisInner", HO - HG / 2, True)
+snap("01_frame_09_pad_clevis_inner", "Isometric")
 sk_b, pad_b = clevis_plate("ClevisOuter", HO + HG / 2, False)
 print(H.dof_text(sk_a), "|", H.dof_text(sk_b))
 edit_snap(sk_b, "01_frame_10_sketch_clevis_plate")

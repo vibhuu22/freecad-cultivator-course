@@ -34,7 +34,7 @@ def reload_me():
 def set_units():
     p = App.ParamGet("User parameter:BaseApp/Preferences/Units")
     p.SetInt("UserSchema", 3)          # Imperial decimal (in, lb)
-    p.SetInt("Decimals", 3)
+    p.SetInt("Decimals", 2)            # matches the dlg_units capture; no long floats on slides
     App.Units.setSchema(3)
 
 
@@ -58,9 +58,21 @@ def _save(pix, name):
     return path
 
 
+def _front_panel():
+    """Model and Tasks are tabbed on the left: show Tasks while a dialog or
+    sketch is open, the Model tree otherwise - what a student would be looking at."""
+    want = "Tasks" if Gui.Control.activeDialog() else "Model"
+    for d in mw().findChildren(QtWidgets.QDockWidget):
+        if d.windowTitle() == want:
+            d.raise_()
+
+
 def shot(name):
     """Full FreeCAD application window - the teaching screenshot."""
+    _front_panel()
     pump()
+    mw().statusBar().clearMessage()
+    pump(50)
     return _save(mw().grab(), name)
 
 
@@ -107,7 +119,142 @@ def view(orient="Isometric", fit=True):
         getattr(v, "view" + orient)()
     if fit:
         Gui.SendMsgToActiveView("ViewFit")
+        fit_tight()
     pump()
+
+
+def fit_tight(margin=1.12):
+    """Fit All sizes the view to the model's bounding *sphere*, so a thin part
+    seen side-on (a 13 in blade from the Right) is a sliver in empty space.
+    Project the visible solids' box corners onto the screen axes instead."""
+    try:
+        from pivy import coin
+        doc = App.ActiveDocument
+        shapes = []
+        for o in doc.Objects:
+            vo = getattr(o, "ViewObject", None)
+            if vo is None or not vo.Visibility:
+                continue
+            if o.TypeId in ("PartDesign::Body", "App::Link") or (
+                    o.isDerivedFrom("Part::Feature") and o.getParentGeoFeatureGroup() is None
+                    and not o.isDerivedFrom("Sketcher::SketchObject")):
+                try:
+                    s = Part.getShape(o)
+                    if not s.isNull() and s.BoundBox.isValid():
+                        shapes.append(s)
+                except Exception:
+                    pass
+        if not shapes:
+            return
+        v = Gui.ActiveDocument.ActiveView
+        cam = v.getCameraNode()
+        if cam.getTypeId().getName() != "OrthographicCamera":
+            return
+        rot = cam.orientation.getValue()
+        right = rot.multVec(coin.SbVec3f(1, 0, 0)).getValue()
+        up = rot.multVec(coin.SbVec3f(0, 1, 0)).getValue()
+        look = rot.multVec(coin.SbVec3f(0, 0, -1)).getValue()
+        us, ws = [], []
+        for s in shapes:
+            bb = s.BoundBox
+            for x in (bb.XMin, bb.XMax):
+                for y in (bb.YMin, bb.YMax):
+                    for z in (bb.ZMin, bb.ZMax):
+                        us.append(x * right[0] + y * right[1] + z * right[2])
+                        ws.append(x * up[0] + y * up[1] + z * up[2])
+        uc, wc = (min(us) + max(us)) / 2.0, (min(ws) + max(ws)) / 2.0
+        bw, bh = max(us) - min(us), max(ws) - min(ws)
+        w_px, h_px = v.getSize()
+        aspect = float(w_px) / float(h_px)
+        # keep the camera's depth, move it across the screen plane to the centre
+        p = cam.position.getValue().getValue()
+        du = uc - (p[0] * right[0] + p[1] * right[1] + p[2] * right[2])
+        dw = wc - (p[0] * up[0] + p[1] * up[1] + p[2] * up[2])
+        cam.position.setValue(p[0] + du * right[0] + dw * up[0],
+                              p[1] + du * right[1] + dw * up[1],
+                              p[2] + du * right[2] + dw * up[2])
+        cam.height.setValue(max(bh, bw / aspect, 1.0) * margin)
+    except Exception as e:                      # never let framing break a build
+        App.Console.PrintWarning("fit_tight: %s\n" % e)
+
+
+# Dimension-label placement per sketch, so no two labels overlap on a slide.
+# name -> (distance from the measured geometry, in; shift along the dimension
+# line, in).  A ("rad", a) shift is an angle, used by radius/diameter labels.
+# Found by trial in the Sketcher; the sign conventions are FreeCAD's own.
+LABELS = {
+    "Frame/Sk_FramePlan":   {"FrameLength": (-4, 0), "InnerLength": (4, 0),
+                             "FrameDepth": (-7, 0), "InnerDepth": (12, 0)},
+    "Frame/Sk_MountHoles":  {"HoleX1": (3, 0), "HoleX2": (-3, -9), "HoleY1": (-3, 0),
+                             "HoleY2": (16, 0), "HoleDia": (11, ("rad", 0.5))},
+    "Frame/Sk_ClevisOuter": {"PlateLen": (-1.5, 0), "PlateRise": (-1.5, 0),
+                             "PlateY": (-4.5, 0), "PlateZ": (-2, 0)},
+    "Tine01/Sk_TineProfile": {"ShankWidth": (2.5, 4), "BendRadius": (-3, ("rad", -0.3)),
+                              "Rake": (7, ("rad", 0)), "FootLength": (-5, 3)},
+    "Tine01/Sk_BoltHoles":   {"BoltX": (0.8, 0), "BoltY": (1.0, 0), "BoltDia": (0.6, ("rad", 0.8))},
+    "Tine02/Sk_BoltHoles":   {"BoltX": (0.8, 0), "BoltY": (1.0, 0), "BoltDia": (0.6, ("rad", 0.8))},
+    "Tine02/Sk_TineProfile": {"BarWidth": (2, -2), "TopStraight": (2, 0),
+                              "CurveRadius": (-6, ("rad", -0.6)), "WorkHeight": (4, 0)},
+    "Clamp01/Sk_Path":       {"Rise": (-2.5, 0), "ArmLength": (-2, 0), "ArmAngle": (5, 0),
+                              "Return": (2, 0), "CornerR3": (1.5, ("rad", 0)),
+                              "CornerR5": (2, ("rad", 3.6))},
+    "Clamp01/Sk_Section":    {"StrapThk": (-0.4, 0)},
+    "Clamp02/Sk_Path":       {"Rise": (-2.5, 0), "TipLength": (3, 0), "TipAngle": (4, 0),
+                              "CornerR2": (3, ("rad", -0.2))},
+    "Clamp02/Sk_Section":    {"StrapThk": (-0.4, 0)},
+    # BladeLength is an arc-length constraint; FreeCAD 1.1.3 draws no label for
+    # those (its value shows in the constraint list), so it needs no placement.
+    "Blade/Sk_Spine":        {"BendRadius": (-0.8, ("rad", -1.45))},
+    "Blade/Sk_Section":      {"Sheet": (-1.5, 0)},
+    "Blade/Sk_PlanShape":    {"TipOffset": (2, 0), "HalfSpan": (1.5, -1), "EdgeAngle": (1.0, 0),
+                              "TrailOffset": (11.5, 0), "StockL": (21.5, 0)},
+}
+
+
+def place_labels(sk):
+    """Keyed "<document name>/<sketch name>" - sketch names repeat across parts."""
+    table = LABELS.get("%s/%s" % (sk.Document.Name, sk.Name), {})
+    for i, c in enumerate(sk.Constraints):
+        if c.Name in table:
+            d, p = table[c.Name]
+            sk.setLabelDistance(i, inch(d))
+            sk.setLabelPosition(i, p[1] if isinstance(p, tuple) else inch(p))
+
+
+def fit_sketch(sk, margin=1.45):
+    """Frame the camera on the sketch being edited, not on the whole body.
+
+    Fit All in the Sketcher fits every visible solid and the sketch axes too,
+    so a 5 in plate sketch on an 82 in frame ends up a speck with its labels
+    piled up. Instead: bounding box of the sketch edges plus its origin (the
+    location dimensions run to the origin), in sketch coordinates, and point
+    the orthographic camera straight at it.
+    """
+    place_labels(sk)
+    # The Sketcher animates the camera to face the sketch; with animation on,
+    # the animation finishes after (and overrides) the camera set below.
+    App.ParamGet("User parameter:BaseApp/Preferences/View").SetBool("UseNavigationAnimations", False)
+    gpl = sk.getGlobalPlacement()
+    inv = gpl.inverse()
+    pts = [inv.multVec(v.Point) for v in sk.Shape.Vertexes]
+    for e in sk.Shape.Edges:                       # arcs bulge past their ends
+        pts += [inv.multVec(p) for p in e.discretize(12)]
+    pts.append(Vector(0, 0, 0))
+    xs, ys = [p.x for p in pts], [p.y for p in pts]
+    cx, cy = (min(xs) + max(xs)) / 2.0, (min(ys) + max(ys)) / 2.0
+    bw, bh = max(xs) - min(xs), max(ys) - min(ys)
+    v = Gui.ActiveDocument.ActiveView
+    w_px, h_px = v.getSize()
+    aspect = float(w_px) / float(h_px)
+    centre = gpl.multVec(Vector(cx, cy, 0))
+    look = gpl.Rotation.multVec(Vector(0, 0, -1))  # camera looks down the sketch normal
+    cam = v.getCameraNode()
+    dist = 5000.0
+    cam.position.setValue(centre.x - look.x * dist, centre.y - look.y * dist,
+                          centre.z - look.z * dist)
+    cam.focalDistance.setValue(dist)
+    cam.height.setValue(max(bh, bw / aspect, 25.4) * margin)
+    pump(250)
 
 
 def shot3d(name, orient="Isometric", w=1400, h=1050, fit=True):
@@ -336,8 +483,36 @@ def params_sheet(doc, rows, name="Params", title="Parameters"):
         sh.set("C%d" % r, desc)
         sh.setAlias("B%d" % r, alias)
     sh.setStyle("A1:C1", "bold")
+    # wide enough that every name and description reads in full on a slide
+    sh.setColumnWidth("A", 150)
+    sh.setColumnWidth("B", 120)
+    sh.setColumnWidth("C", 420)
     doc.recompute()
     return sh
+
+
+def shot_sheet(sheet, name, zoom=130):
+    """The parameter table open in its own tab - what a student actually looks
+    at while typing values in. (A grab of the 3D view at this point shows an
+    empty viewport; the sheet is only a line in the tree.)"""
+    doc = sheet.Document
+    Gui.getDocument(doc.Name).setEdit(sheet)
+    pump(500)
+    mdi = mw().findChild(QtWidgets.QMdiArea)
+    sub = mdi.activeSubWindow()
+    w = sub.widget()
+    s = w.findChild(QtWidgets.QSlider, "zoomSlider")
+    if s is not None:
+        s.setValue(zoom)
+    for tv in QtWidgets.QApplication.allWidgets():
+        if isinstance(tv, QtWidgets.QTableView) and tv.objectName() == "cells" and tv.isVisible():
+            tv.selectionModel().setCurrentIndex(tv.model().index(0, 0),
+                                                QtCore.QItemSelectionModel.ClearAndSelect)
+    pump(300)
+    path = shot(name)
+    sub.close()
+    pump(300)
+    return path
 
 
 def bind(obj, path, expr):

@@ -13,7 +13,7 @@ mounting face so the part drops straight onto the tool bar in the assembly.
   5 x 1.25 in mounting head, two 0.5 in bolts at 3 in centres
 """
 import sys, math
-sys.path.insert(0, r"C:\Users\ASUS\Desktop\freecad\tools")
+sys.path.insert(0, r"C:\Users\ASUS\Desktop\freecad\_archive\tools")
 import fc_helpers as H
 H.reload_me()
 import fc_helpers as H
@@ -37,7 +37,7 @@ def snap(name, orient=None):
 def edit_snap(sk, name):
     Gui.ActiveDocument.setEdit(sk)
     H.pump(300)
-    Gui.SendMsgToActiveView("ViewFit")
+    H.fit_sketch(sk)
     H.pump(200)
     snap(name)
     Gui.ActiveDocument.resetEdit()
@@ -59,7 +59,10 @@ BDIA   = 0.5       # bolt hole diameter
 RO   = RI + W                                   # outer bend radius, 8.25
 RC   = RI + W / 2.0                             # centreline bend radius, 7.125
 A    = math.radians(RAKE)
-LLEG = LTOT - HSTR - RC * A                     # straight foot below the bend
+# Straight foot below the bend. The exact value that makes the centreline 25 in
+# long is LTOT - HSTR - RC*A = 5.6476 in; the sketch is driven by the rounded
+# 5.65 in (0.002 in longer) so every label on the slide is a readable number.
+LLEG = 5.65
 CY   = -HSTR                                    # bend centre
 CX   = -W / 2.0 - RI                            # bend centre, -7.125
 TANG = (math.sin(-A), -math.cos(-A))            # foot direction, down and forward
@@ -93,17 +96,17 @@ PAR = [
     ("StraightHt",   "15 in",   "Straight vertical part of the shank"),
     ("BendRadius",   "6 in",    "Inner radius of the forward bend"),
     ("Rake",         "35 deg",  "Forward rake of the foot"),
-    ("FootLength",   "%.4f in" % LLEG, "Straight foot below the bend"),
-    ("FootReach",    "=-(ShankWidth / 2 + BendRadius) + (BendRadius + ShankWidth) "
-                     "* cos(Rake) - FootLength * sin(Rake)",
-                     "How far forward the point reaches (derived from Rake)"),
+    ("FootLength",   "5.65 in", "Straight foot below the bend (tyne is 25 in long)"),
+    ("FootReach",    "=(ShankWidth / 2 + BendRadius) - (BendRadius + ShankWidth) "
+                     "* cos(Rake) + FootLength * sin(Rake)",
+                     "Result: how far forward the point reaches"),
     ("HeadLength",   "5 in",    "Mounting head length along the tool bar"),
     ("HeadThk",      "1.25 in", "Mounting head thickness"),
     ("BoltSpacing",  "3 in",    "Bolt centres"),
     ("BoltDia",      "0.5 in",  "Bolt hole diameter"),
 ]
 sheet = H.params_sheet(doc, PAR, title="Tine 01 parameters")
-snap("02_tine01_00_params")
+H.shot_sheet(sheet, "02_tine01_00_params")
 
 bd = H.body(doc, "Tine01")
 H.activate(bd)
@@ -144,21 +147,22 @@ cw = sk.addConstraint(Sketcher.Constraint("DistanceX", g_top, 1, g_top, 2, H.inc
 ch = sk.addConstraint(Sketcher.Constraint("Distance", g_rear, H.inch(HSTR)))
 cr = sk.addConstraint(Sketcher.Constraint("Radius", g_ain, H.inch(RI)))
 cl = sk.addConstraint(Sketcher.Constraint("Distance", g_leg_r, H.inch(LLEG)))
-# The rake is dimensioned as forward reach, not as an angle: an Angle constraint
-# here has two valid solutions and the solver happily picks the mirrored one.
-ca = sk.addConstraint(Sketcher.Constraint("DistanceX", -1, 1, g_leg_r, 2,
-                                          H.inch(p_tip_r[0])))
+# The rake is the sweep angle of the bend arc. An angle between two *lines* has
+# two valid solutions and the solver can flip the tyne backwards; an arc's own
+# sweep angle has only one, and it reads as a plain "35 deg" on the slide.
+ca = sk.addConstraint(Sketcher.Constraint("Angle", g_aout, A))
 for c, nm in ((cw, "ShankWidth"), (ch, "StraightHt"), (cr, "BendRadius"),
-              (cl, "FootLength"), (ca, "FootReach")):
+              (cl, "FootLength"), (ca, "Rake")):
     sk.renameConstraint(c, nm)
 doc.recompute()
 print(H.dof_text(sk))
 print("tip at", [round(v / H.IN, 3) for v in sk.Geometry[g_tip].StartPoint])
 for nm, expr in (("ShankWidth", u"Params.ShankWidth"), ("StraightHt", u"Params.StraightHt"),
                  ("BendRadius", u"Params.BendRadius"), ("FootLength", u"Params.FootLength"),
-                 ("FootReach", u"Params.FootReach")):
+                 ("Rake", u"Params.Rake")):
     sk.setExpression("Constraints.%s" % nm, expr)
 doc.recompute()
+# label placement comes from H.LABELS, applied when the sketch is captured
 edit_snap(sk, "02_tine01_02_sketch_profile")
 
 pad1 = H.pad(bd, sk, THK, midplane=True, name="Pad_Shank")
